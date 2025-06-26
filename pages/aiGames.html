@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List with CRUD</title>
+    <style>
+        /* CSS */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 1rem;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            background-color: #5cb85c;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #4cae4c;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul li {
+            background: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        ul li input[type="text"] {
+            flex: 1;
+            margin-right: 10px;
+            padding: 5px;
+        }
+
+        ul li button {
+            margin-left: 5px;
+            background-color: #d9534f;
+        }
+
+        ul li button.edit {
+            background-color: #5bc0de;
+        }
+
+        ul li button.save {
+            background-color: #5cb85c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>To-Do List (CRUD)</h1>
+        <input type="text" id="taskInput" placeholder="Enter a new task">
+        <button onclick="addTask()">Add Task</button>
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        // JavaScript
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskList = document.getElementById('taskList');
+            const taskText = taskInput.value.trim();
+
+            if (taskText === '') {
+                alert('Please enter a task.');
+                return;
+            }
+
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span class="task-text">${taskText}</span>
+                <input type="text" class="edit-input" style="display: none;">
+                <button class="edit" onclick="editTask(this)">Edit</button>
+                <button class="save" style="display: none;" onclick="saveTask(this)">Save</button>
+                <button onclick="removeTask(this)">Remove</button>
+            `;
+            taskList.appendChild(li);
+
+            taskInput.value = '';
+        }
+
+        function removeTask(button) {
+            const li = button.parentElement;
+            li.remove();
+        }
+
+        function editTask(button) {
+            const li = button.parentElement;
+            const taskText = li.querySelector('.task-text');
+            const editInput = li.querySelector('.edit-input');
+            const saveButton = li.querySelector('.save');
+
+            editInput.value = taskText.textContent;
+            taskText.style.display = 'none';
+            editInput.style.display = 'inline';
+            button.style.display = 'none';
+            saveButton.style.display = 'inline';
+        }
+
+        function saveTask(button) {
+            const li = button.parentElement;
+            const taskText = li.querySelector('.task-text');
+            const editInput = li.querySelector('.edit-input');
+            const editButton = li.querySelector('.edit');
+
+            if (editInput.value.trim() === '') {
+                alert('Task cannot be empty.');
+                return;
+            }
+
+            taskText.textContent = editInput.value.trim();
+            taskText.style.display = 'inline';
+            editInput.style.display = 'none';
+            button.style.display = 'none';
+            editButton.style.display = 'inline';
+        }
+    </script>
+</body>
+</html>
