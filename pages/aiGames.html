@@ -1,161 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>To-Do List with CRUD</title>
-    <style>
-        /* CSS */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .container {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 400px;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 1.5em;
-            margin-bottom: 1rem;
-        }
-
-        input[type="text"] {
-            width: 80%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            background-color: #5cb85c;
-            color: #fff;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #4cae4c;
-        }
-
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        ul li {
-            background: #f9f9f9;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        ul li input[type="text"] {
-            flex: 1;
-            margin-right: 10px;
-            padding: 5px;
-        }
-
-        ul li button {
-            margin-left: 5px;
-            background-color: #d9534f;
-        }
-
-        ul li button.edit {
-            background-color: #5bc0de;
-        }
-
-        ul li button.save {
-            background-color: #5cb85c;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>One, Two, Look!</title>
+  <link rel="stylesheet" href="../css/onetwogame.css" />
 </head>
 <body>
-    <div class="container">
-        <h1>To-Do List (CRUD)</h1>
-        <input type="text" id="taskInput" placeholder="Enter a new task">
-        <button onclick="addTask()">Add Task</button>
-        <ul id="taskList"></ul>
+  <!-- Navbar -->
+  <nav class="main-navbar">
+    <div class="navbar-container">
+      <a href="#top" class="navbar-brand">Kirsten Ledesma - One, Two, Look!</a>
+      <div class="navbar-links">
+        <a href="../index.html" class="nav-item">Resume</a>
+        <a href="scratch.html" class="nav-item">Hobby</a>
+        <a href="tableau.html" class="nav-item">Tableau</a>
+      </div>
     </div>
+  </nav>
 
-    <script>
-        // JavaScript
-        function addTask() {
-            const taskInput = document.getElementById('taskInput');
-            const taskList = document.getElementById('taskList');
-            const taskText = taskInput.value.trim();
+  <div class="instructions">
+    Guess whether your opponent will look up, down, left, or right. If you guess correctly, you switch turns. Click buttons or use arrow keys to play.
+  </div>
 
-            if (taskText === '') {
-                alert('Please enter a task.');
-                return;
-            }
+  <div class="toast" id="toast"></div>
 
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <span class="task-text">${taskText}</span>
-                <input type="text" class="edit-input" style="display: none;">
-                <button class="edit" onclick="editTask(this)">Edit</button>
-                <button class="save" style="display: none;" onclick="saveTask(this)">Save</button>
-                <button onclick="removeTask(this)">Remove</button>
-            `;
-            taskList.appendChild(li);
+  <div class="game-container">
+    <div class="scoreboard">You: <span id="userScore">0</span> | AI: <span id="aiScore">0</span></div>
+    <div class="turn-info" id="turnInfo">Get ready to guess!</div>
+    <div class="countdown" id="countdown">3</div>
+    <!-- button style -->
+     <div class="choices">
+        <button onclick="playerChoice('up')">↑ Up</button>
+        <button onclick="playerChoice('left')">← Left</button>
+        <button onclick="playerChoice('right')">→ Right</button>
+        <button onclick="playerChoice('down')">↓ Down</button></div>
+    <!-- end of button style -->
+    <div class="result" id="result"></div>
+  </div>
 
-            taskInput.value = '';
+  <script>
+    let userScore = 0;
+    let aiScore = 0;
+    let isUserTurn = true;
+    let directionOptions = ['up', 'down', 'left', 'right'];
+    let aiMove = '';
+    let acceptingInput = false;
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast show';
+      setTimeout(() => {
+        toast.className = 'toast';
+        startCountdown();
+      }, 3000);
+    }
+
+    function startCountdown() {
+      let count = 3;
+      document.getElementById('countdown').textContent = count;
+      document.getElementById('result').textContent = '';
+      const interval = setInterval(() => {
+        count--;
+        document.getElementById('countdown').textContent = count;
+        if (count === 0) {
+          clearInterval(interval);
+          document.getElementById('countdown').textContent = 'Go!';
+          acceptingInput = true;
+          if (!isUserTurn) {
+            aiMove = directionOptions[Math.floor(Math.random() * 4)];
+          }
         }
+      }, 1000);
+    }
 
-        function removeTask(button) {
-            const li = button.parentElement;
-            li.remove();
+    function playerChoice(choice) {
+      if (!acceptingInput) return;
+      acceptingInput = false;
+
+      if (isUserTurn) {
+        aiMove = directionOptions[Math.floor(Math.random() * 4)];
+        if (choice === aiMove) {
+          userScore++;
+          isUserTurn = false;
+          document.getElementById('result').textContent = `✅ Correct! AI chose ${aiMove}. Now AI guesses.`;
+        } else {
+          document.getElementById('result').textContent = `❌ Wrong! AI chose ${aiMove}. Try again.`;
         }
-
-        function editTask(button) {
-            const li = button.parentElement;
-            const taskText = li.querySelector('.task-text');
-            const editInput = li.querySelector('.edit-input');
-            const saveButton = li.querySelector('.save');
-
-            editInput.value = taskText.textContent;
-            taskText.style.display = 'none';
-            editInput.style.display = 'inline';
-            button.style.display = 'none';
-            saveButton.style.display = 'inline';
+      } else {
+        if (choice === aiMove) {
+          aiScore++;
+          isUserTurn = true;
+          document.getElementById('result').textContent = `😬 AI guessed ${aiMove} and was right! Now it's your turn.`;
+        } else {
+          document.getElementById('result').textContent = `🎉 AI guessed ${aiMove} and was wrong! Stay alert.`;
         }
+      }
 
-        function saveTask(button) {
-            const li = button.parentElement;
-            const taskText = li.querySelector('.task-text');
-            const editInput = li.querySelector('.edit-input');
-            const editButton = li.querySelector('.edit');
+      updateScores();
+      updateTurnInfo();
+      setTimeout(() => showToast(isUserTurn ? "Your turn to guess!" : "AI's turn to guess!"), 1000);
+    }
 
-            if (editInput.value.trim() === '') {
-                alert('Task cannot be empty.');
-                return;
-            }
+    function updateScores() {
+      document.getElementById('userScore').textContent = userScore;
+      document.getElementById('aiScore').textContent = aiScore;
+    }
 
-            taskText.textContent = editInput.value.trim();
-            taskText.style.display = 'inline';
-            editInput.style.display = 'none';
-            button.style.display = 'none';
-            editButton.style.display = 'inline';
-        }
-    </script>
+    function updateTurnInfo() {
+      document.getElementById('turnInfo').textContent = isUserTurn ? 'Your turn to guess!' : "AI's turn to guess!";
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (!acceptingInput) return;
+      switch (e.key) {
+        case 'ArrowUp': playerChoice('up'); break;
+        case 'ArrowDown': playerChoice('down'); break;
+        case 'ArrowLeft': playerChoice('left'); break;
+        case 'ArrowRight': playerChoice('right'); break;
+      }
+    });
+
+    updateTurnInfo();
+    showToast("Your turn to guess!");
+  </script>
 </body>
 </html>
